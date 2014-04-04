@@ -6,6 +6,10 @@ var Instagram = require('instagram-node-lib');
 var http = require('http');
 var request = ('request');
 var intervalID;
+var subId;
+var measuringHour = new Date().getHours();
+var counter = 0;
+var API_LIMIT = 10;
 
 /**
  * Set the paths for your files
@@ -43,10 +47,12 @@ Instagram.set('maxSockets', 10);
   type: 'subscription',
   id: '#'
 });*/
-Instagram.tags.subscribe(
+var subscription = Instagram.tags.subscribe(
 	{ object_id: 'nofilter',
 	callback_url: 'http://opendata-unibe.herokuapp.com/callback'
 });
+subId = subscription.id;
+console.log(subId);
 
 // if you want to unsubscribe to any hashtag you subscribe
 // just need to pass the ID Instagram send as response to you
@@ -76,7 +82,7 @@ app.engine('html', require('ejs').__express);
  * Render your index/view "my choice was not use jade"
  */
 app.get("/views", function(req, res) {
-	console.log(res.query.tag);
+	console.log(req.query.tag);
     res.render("index.html");
 });
 
@@ -106,13 +112,18 @@ app.get('/callback', function(req, res){
 
 app.get('/stop', function(req, res) {
 	console.log('stopping');
-	Instagram.tags.unsubscribe_all();
+	unsubscribe();
 })
 
 /**
  * for each new post Instagram send us the data
  */
 app.post('/callback', function(req, res) {
+	ct = incrementCounter();
+	if(ct > API_LIMIT) {
+		console.log('API limit reached, unsubscribed');
+		unsubscribe();
+	}
     var data = req.body;
 	console.log('response received');
 
@@ -133,6 +144,22 @@ app.post('/callback', function(req, res) {
  */
 function sendMessage(url) {
   io.sockets.emit('show', { show: url });
+}
+
+function incrementCounter(time) {
+	var h = new Date().getHours();
+	console.log('Counter is ' + counter);
+	if( h == measuringHour ) {
+		counter++;
+	} else {
+		measuringHour = h;
+		counter = 1;
+	}
+	return counter;
+}
+
+function unsubscribe() {
+	Instagram.tags.unsubscribe_all();
 }
 
 console.log("Listening on port " + port);
