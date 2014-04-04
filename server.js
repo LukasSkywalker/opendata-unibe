@@ -75,7 +75,8 @@ app.engine('html', require('ejs').__express);
 /**
  * Render your index/view "my choice was not use jade"
  */
-app.get("/views", function(req, res){
+app.get("/views", function(req, res) {
+	console.log(res.query.tag);
     res.render("index.html");
 });
 
@@ -102,6 +103,11 @@ app.get('/callback', function(req, res){
 	console.log('callback received');
     Instagram.subscriptions.handshake(req, res);
 });
+
+app.get('/stop', function(req, res) {
+	console.log('stopping');
+	Instagram.tags.unsubscribe_all();
+})
 
 /**
  * for each new post Instagram send us the data
