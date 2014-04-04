@@ -35,13 +35,17 @@ Instagram.set('maxSockets', 10);
  * with the tag "hashtag" lollapalooza
  * @type {String}
  */
-Instagram.subscriptions.subscribe({
+/*Instagram.subscriptions.subscribe({
   object: 'tag',
   object_id: 'nofilter',
   aspect: 'media',
   callback_url: 'http://opendata-unibe.herokuapp.com/callback',
   type: 'subscription',
   id: '#'
+});*/
+Instagram.tags.subscribe(
+	{ object_id: 'nofilter',
+	callback_url: 'http://opendata-unibe.herokuapp.com/callback'
 });
 
 // if you want to unsubscribe to any hashtag you subscribe
@@ -82,14 +86,14 @@ app.get("/views", function(req, res){
  * On socket.io connection we get the most recent posts
  * and send to the client side via socket.emit
  */
-/*io.sockets.on('connection', function (socket) {
+io.sockets.on('connection', function (socket) {
   Instagram.tags.recent({ 
       name: 'nofilter',
       complete: function(data) {
         socket.emit('firstShow', { firstShow: data });
       }
   });
-});*/
+});
 
 /**
  * Needed to receive the handshake
@@ -110,7 +114,7 @@ app.post('/callback', function(req, res) {
     // concatenate to the url and send as a argument to the client side
     data.forEach(function(tag) {
       var url = 'https://api.instagram.com/v1/tags/' + tag.object_id + '/media/recent?client_id=c842735be89349b29e0d343d97a0988e';
-      //sendMessage(url);
+      sendMessage(url);
 
     });
     res.end();
@@ -121,9 +125,9 @@ app.post('/callback', function(req, res) {
  * to do the ajax call based on the url
  * @param  {[string]} url [the url as string with the hashtag]
  */
-/*function sendMessage(url) {
+function sendMessage(url) {
   io.sockets.emit('show', { show: url });
-}*/
+}
 
 console.log("Listening on port " + port);
 
