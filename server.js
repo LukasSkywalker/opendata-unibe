@@ -66,12 +66,13 @@ app.configure(function(){
     app.use(express.errorHandler());
 });
 app.set('view engine', 'ejs');
+app.engine('html', require('ejs').__express);
 
 /**
  * Render your index/view "my choice was not use jade"
  */
 app.get("/views", function(req, res){
-    res.render("index");
+    res.render("index.html");
 });
 
 // check subscriptions
